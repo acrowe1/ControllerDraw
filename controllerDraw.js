@@ -17,6 +17,10 @@ function setup() {
   circleX = width / 2; 
   circleY = height / 2; 
   selectedColor = color('white');
+  
+  // Start Tone.js context
+  Tone.start();
+  
   synth = new Tone.Synth().toDestination();
 
   colors = [new ColorSquare(0, 0, color('red')),
@@ -49,13 +53,7 @@ function setup() {
   frameRate(90);
 }
 
-function startToneContext() {
-  Tone.start();
-}
-
 function draw() {
-  background(220);
-
   let characters = port.available(); 
   if (characters > 0) {
     let str = port.read(characters);
@@ -73,12 +71,10 @@ function draw() {
       sw = Number(values[2]); 
     }
   }
-
-  // Update circle position based on joystick input
+  
   circleX += joyX * speed;
   circleY += joyY * speed;
 
-  // Constrain circle position to stay within canvas boundaries
   circleX = constrain(circleX, size / 2, width - size / 2);
   circleY = constrain(circleY, size / 2, height - size / 2);
 
@@ -89,7 +85,6 @@ function draw() {
   stroke(selectedColor);
   fill(selectedColor);
 
-  // Check if the circle is hovering over any color square
   for (let i = 0; i < colors.length; i++) {
     if (colors[i].isCircleOver()) {
       selectedColor = colors[i].fill;
@@ -100,26 +95,21 @@ function draw() {
   if (sw == 1) {
     dragging = true;
     playNote();
-  } else {
+  } else if (sw != 1) {
     dragging = false;
   }
 
   if (dragging) {
     circle(circleX, circleY, size);
     set(circleX, circleY, selectedColor);
-  }
+  } 
 
+  stroke('black');
   circle(circleX, circleY, 10);
-}
-
-function startToneContext() {
-  Tone.start();
 }
 
 function playNote() {
   let noteFreq = Tone.Frequency(map(circleY, 0, height, 48, 72), "midi");
-  // let velocity = map(circleX, 0, width, 0.2, 1);
-  
   synth.triggerAttackRelease(noteFreq, "8n");
 }
 
